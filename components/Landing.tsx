@@ -195,7 +195,7 @@ export default function Landing({ lang }: { lang: Lang }) {
             <div className="mt-14 grid gap-px overflow-hidden rounded-xl bg-white/12 sm:grid-cols-3">
               {c.senior.levels.map((l) => (
                 <div key={l.label} className="bg-[var(--color-ink)] p-7">
-                  <h3 className="text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-[#7fc2b6]">
+                  <h3 className="text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-[var(--color-accent-on-dark)]">
                     {l.label}
                   </h3>
                   <p className="mt-4 text-[0.9375rem] leading-relaxed text-white/75">
@@ -270,9 +270,9 @@ export default function Landing({ lang }: { lang: Lang }) {
             {/* Ticket mockup */}
             <div className="rounded-xl border border-[var(--color-rule)] bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_32px_-12px_rgba(0,0,0,0.12)]">
               <div className="flex items-center gap-1.5 border-b border-[var(--color-rule)] pb-4">
-                <span className="h-2 w-2 rounded-full bg-[#e0ddd6]" />
-                <span className="h-2 w-2 rounded-full bg-[#e0ddd6]" />
-                <span className="h-2 w-2 rounded-full bg-[#e0ddd6]" />
+                <span className="h-2 w-2 rounded-full bg-[var(--color-rule)]" />
+                <span className="h-2 w-2 rounded-full bg-[var(--color-rule)]" />
+                <span className="h-2 w-2 rounded-full bg-[var(--color-rule)]" />
                 <span className="ml-3 text-[0.75rem] text-[var(--color-muted)]">
                   #1284
                 </span>

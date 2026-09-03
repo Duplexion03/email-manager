@@ -1,14 +1,20 @@
 @import "tailwindcss";
 
+/* Paleta tomada de manegit.com. Todo el color del sitio sale de acá:
+   si cambia un token, cambia la landing entera. No hardcodear hex en los
+   componentes. */
 @theme {
-  --color-paper: #fbfaf8;
-  --color-paper-2: #f3f1ec;
-  --color-ink: #16181c;
-  --color-ink-2: #3c4046;
-  --color-muted: #71767e;
-  --color-rule: #e2ded6;
-  --color-accent: #14504a;
-  --color-accent-soft: #e6efec;
+  --color-paper: #fdfcff;
+  --color-paper-2: #f4f0fb;
+  --color-ink: #101010;
+  --color-ink-2: #3a3a42;
+  --color-muted: #6f6f78;
+  --color-rule: #e4e1ea;
+  --color-accent: #7424f5;
+  --color-accent-hover: #5b17c9;
+  --color-accent-soft: #f1e9fe;
+  --color-accent-on-dark: #9b6cff;
+  --color-danger: #9c2b2b;
   --font-sans: ui-sans-serif, -apple-system, "Segoe UI", Inter, Roboto,
     "Helvetica Neue", Arial, sans-serif;
 }
@@ -89,7 +95,7 @@ body {
   color: #fff;
 }
 .btn-primary:hover {
-  background: #0f3f3a;
+  background: var(--color-accent-hover);
 }
 
 .btn-ghost {

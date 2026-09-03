@@ -143,7 +143,7 @@ export default function ContactForm({ c }: { c: Content["contact"] }) {
           {state === "sending" ? f.sending : f.submit}
         </button>
         {state === "error" && (
-          <p className="text-sm text-[#9c2b2b]">{f.error}</p>
+          <p className="text-sm text-[var(--color-danger)]">{f.error}</p>
         )}
       </div>
     </form>
