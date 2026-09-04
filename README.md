@@ -31,12 +31,24 @@ La estructura de componentes no cambia.
 
 ## Deploy en Vercel
 
-1. `git init && git add . && git commit -m "init"` y push a un repo nuevo.
-2. Importar el repo en Vercel. No hace falta configurar nada del build.
-3. Variables de entorno:
-   - `NEXT_PUBLIC_SITE_URL` = `https://emailmanager.tech` (o el dominio final)
-   - `LEADS_TO_EMAIL` y `RELAY_API_KEY` cuando se conecte el formulario.
-4. Apuntar el dominio.
+Ya está hecho: repo en `github.com/Duplexion03/email-manager`, proyecto en
+`tomas-olmedos-projects/email-manager`. Cada push a `main` redeploya solo.
+
+### La URL del sitio
+
+`lib/site.ts` la resuelve en este orden y **todo** (sitemap, robots, canonical,
+Open Graph, structured data) sale de ahí:
+
+1. `NEXT_PUBLIC_SITE_URL` — override explícito. Setearla el día que exista el
+   dominio real, y hacer redeploy: las env vars solo se aplican en un build nuevo.
+2. `VERCEL_PROJECT_PRODUCTION_URL` — la inyecta Vercel sola. Por eso hoy no hay
+   ninguna env var configurada y el deploy igual es coherente.
+3. `http://localhost:3000` para `npm run dev`.
+
+No hardcodear la URL en ningún otro archivo. Si estos cuatro no coinciden, los
+crawlers ven un canonical que contradice al sitemap.
+
+`LEADS_TO_EMAIL` y `RELAY_API_KEY` van cuando se conecte el formulario.
 
 ## Pendiente antes de salir a producción
 

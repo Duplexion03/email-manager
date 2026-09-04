@@ -1,6 +1,5 @@
 import { content, type Lang } from "./content";
-
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://emailmanager.tech";
+import { SITE } from "./site";
 
 /**
  * Structured data. Two jobs:

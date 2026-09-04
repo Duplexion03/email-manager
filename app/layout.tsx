@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
+import { SITE } from "@/lib/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://emailmanager.tech"
-  ),
+  metadataBase: new URL(SITE),
   title: {
     default: "Email Manager",
     template: "%s",
