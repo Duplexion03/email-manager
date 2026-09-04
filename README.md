@@ -48,13 +48,29 @@ Open Graph, structured data) sale de ahí:
 No hardcodear la URL en ningún otro archivo. Si estos cuatro no coinciden, los
 crawlers ven un canonical que contradice al sitemap.
 
-`LEADS_TO_EMAIL` y `RELAY_API_KEY` van cuando se conecte el formulario.
+### El formulario
+
+`app/api/contact/route.ts` manda el lead por Doppler Relay a `info@manegit.com`.
+Env vars en Vercel:
+
+| Var | Obligatoria | Qué es |
+|---|---|---|
+| `RELAY_API_KEY` | sí | API key de Doppler Relay |
+| `RELAY_ACCOUNT_ID` | sí | El account id que va en la URL del endpoint |
+| `RELAY_FROM_EMAIL` | sí | Remitente. **Tiene que ser de un dominio autenticado en Relay**, si no Relay rechaza el envío |
+| `RELAY_FROM_NAME` | no | Default: `Email Manager` |
+| `LEADS_TO_EMAIL` | no | Default: `info@manegit.com` |
+
+Mientras falte alguna de las tres obligatorias el endpoint devuelve 503 y el
+formulario muestra "escribinos directo a info@manegit.com". Es deliberado: el
+lead igual queda en los logs de Vercel (buscar `[lead]`), y decir la verdad es
+mejor que un "Listo" falso sobre un mail que nunca se mandó.
 
 ## Pendiente antes de salir a producción
 
-- [ ] **Conectar el formulario.** `app/api/contact/route.ts` valida y loguea, no envía nada.
-      Lo natural es mandarlo con Doppler Relay — vendemos eso, conviene usarlo.
-- [ ] Dominio y mail real (hoy dice `hola@emailmanager.tech` en el mensaje de error).
+- [x] **Conectar el formulario.** Hecho, manda por Doppler Relay. Falta cargar
+      las env vars de arriba en Vercel: hasta entonces no sale ningún mail.
+- [ ] Dominio propio. El mail de contacto ya es `info@manegit.com`.
 - [ ] Página de Privacidad y Términos (el footer ya las lista, todavía no linkean).
 - [ ] Client Login (cuando exista el workspace de tickets).
 - [ ] Badge de certificación Doppler, si se saca la de Academy.

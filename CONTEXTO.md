@@ -58,13 +58,19 @@ Stack: Next.js 16 (App Router, Turbopack) + Tailwind v4. Sin librerías de UI.
 
 ## Pendientes, en orden
 
-1. **Conectar el formulario.** `app/api/contact/route.ts` no envía nada.
-   Lo natural es mandarlo con Doppler Relay: si el sitio vende transaccionales,
-   tiene que usarlos. Env vars previstas: `RELAY_API_KEY`, `LEADS_TO_EMAIL`.
-2. **Repo + Vercel.** Crear repo, push, importar en Vercel,
-   setear `NEXT_PUBLIC_SITE_URL`.
-3. **Dominio.** Hoy está hardcodeado `emailmanager.tech` como placeholder,
-   y el mail de error dice `hola@emailmanager.tech`. Reemplazar por el real.
+1. **Cargar las credenciales de Doppler Relay en Vercel.** El formulario ya
+   manda por Relay a `info@manegit.com`, pero faltan `RELAY_API_KEY`,
+   `RELAY_ACCOUNT_ID` y `RELAY_FROM_EMAIL`. **Hasta que estén, ningún lead
+   sale por mail**: el endpoint devuelve 503 y el formulario dice "escribinos
+   directo". Los leads quedan igual en los logs de Vercel, buscando `[lead]`.
+   Ojo con `RELAY_FROM_EMAIL`: tiene que ser de un dominio autenticado dentro
+   de la cuenta de Relay, si no Relay rechaza el envío.
+2. ~~Repo + Vercel.~~ Hecho. `github.com/Duplexion03/email-manager` →
+   `email-manager-xi.vercel.app`. Push a `main` redeploya solo.
+   `NEXT_PUBLIC_SITE_URL` no hace falta: `lib/site.ts` lee la URL que Vercel
+   inyecta sola. Setearla solo cuando exista el dominio real.
+3. **Dominio.** Todavía no hay uno propio. El mail de contacto ya es
+   `info@manegit.com` y no queda ningún `emailmanager.tech` en el código.
 4. **Privacidad y Términos.** El footer ya las lista pero no linkean a nada.
 5. **Certificación de Doppler Academy** (es gratuita) para poner el badge.
    Es la única prueba social disponible hasta que haya un caso aprobado.

@@ -227,7 +227,7 @@ export const content = {
         sending: "Enviando…",
         success:
           "Listo. Lo leemos y te respondemos con un próximo paso concreto.",
-        error: "No se pudo enviar. Escribinos directo a hola@emailmanager.tech",
+        error: "No se pudo enviar. Escribinos directo a info@manegit.com",
       },
       helpTypeOptions: [
         "Operación mensual de campañas",
@@ -541,7 +541,7 @@ export const content = {
         submit: "Send",
         sending: "Sending…",
         success: "Got it. We will read it and reply with a concrete next step.",
-        error: "Could not send. Write to us at hola@emailmanager.tech",
+        error: "Could not send. Write to us at info@manegit.com",
       },
       helpTypeOptions: [
         "Monthly campaign operations",

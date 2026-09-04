@@ -372,7 +372,7 @@ export default function Landing({ lang }: { lang: Lang }) {
                 ))}
               </ul>
             </div>
-            <ContactForm c={c.contact} />
+            <ContactForm c={c.contact} lang={lang} />
           </div>
         </section>
 

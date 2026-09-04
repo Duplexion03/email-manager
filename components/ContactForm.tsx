@@ -1,9 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import type { Content } from "@/lib/content";
+import type { Content, Lang } from "@/lib/content";
 
-export default function ContactForm({ c }: { c: Content["contact"] }) {
+export default function ContactForm({
+  c,
+  lang,
+}: {
+  c: Content["contact"];
+  lang: Lang;
+}) {
   const f = c.fields;
   const [state, setState] = useState<"idle" | "sending" | "ok" | "error">(
     "idle"
@@ -40,6 +46,9 @@ export default function ContactForm({ c }: { c: Content["contact"] }) {
       onSubmit={onSubmit}
       className="rounded-xl border border-[var(--color-rule)] bg-white p-6 sm:p-8"
     >
+      {/* Which landing the lead came from, so the reply goes out in their language. */}
+      <input type="hidden" name="lang" value={lang} />
+
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <label className="label" htmlFor="name">
