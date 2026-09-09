@@ -4,15 +4,28 @@
  * The site sells transactional email on Relay, so the site sends with Relay.
  * Using anything else here would be hard to defend in a sales call.
  *
- * API (confirmed against the official example, not guessed):
+ * API:
  *   POST https://api.dopplerrelay.com/accounts/{accountId}/messages
- *   Authorization: token {apiKey}
  *
- * Only the fields documented in that example are sent. `reply_to` is NOT
- * included: it is not in the public schema and an unknown field risks a 400
- * on every lead. The lead's address goes in the subject and at the top of the
- * body instead, so replying is one copy away.
+ * On authentication, the official docs contradict each other:
+ *   /docs/quickexamples  ->  Authorization: token {apiKey}
+ *   /docs/gettingstarted ->  Authorization: Bearer {apiKey}
+ *
+ * Both are Doppler's own documentation, so rather than bet on one and have
+ * every lead fail with an unexplained 401, we send with the first scheme and
+ * retry once with the other if Relay rejects the credentials. The scheme that
+ * works is logged, so it can be pinned here once we see it in production.
+ *
+ * Only the fields confirmed in the official example are sent. `reply_to` is
+ * NOT included: it is absent from the public schema and an unknown field
+ * risks a 400 on every lead. The lead's address goes in the subject and at
+ * the top of the body instead, so replying is one copy away.
  */
+
+/** Tried in order. Relay accepts one of them; the docs disagree on which. */
+const AUTH_SCHEMES = ["Bearer", "token"] as const;
+
+const SEND_TIMEOUT_MS = 10_000;
 
 export type RelayConfig = {
   apiKey: string;
@@ -23,8 +36,8 @@ export type RelayConfig = {
 };
 
 export type RelayResult =
-  | { ok: true }
-  | { ok: false; reason: "http" | "network" | "timeout"; detail: string };
+  | { ok: true; scheme: string }
+  | { ok: false; reason: "auth" | "http" | "network" | "timeout"; detail: string };
 
 /** Where leads go unless the environment says otherwise. */
 const DEFAULT_LEADS_TO = "info@manegit.com";
@@ -35,8 +48,8 @@ const DEFAULT_LEADS_TO = "info@manegit.com";
  * Returns null when Relay is not configured yet, so the caller can react
  * deliberately instead of firing a request that comes back as an opaque 401.
  * `fromEmail` has no default on purpose: it must belong to a domain that is
- * authenticated inside the Relay account, and guessing one would produce
- * sends that Relay silently rejects or that land in spam.
+ * verified inside the Relay account — Relay blocks sending until that is
+ * done — and guessing one would produce sends that get rejected outright.
  */
 export function relayConfig(): RelayConfig | null {
   const apiKey = process.env.RELAY_API_KEY?.trim();
@@ -62,39 +75,53 @@ export async function sendViaRelay(
     cfg.accountId
   )}/messages`;
 
-  let res: Response;
+  const payload = JSON.stringify({
+    from_name: cfg.fromName,
+    from_email: cfg.fromEmail,
+    recipients: [{ type: "to", email: cfg.toEmail, name: cfg.fromName }],
+    subject: msg.subject,
+    html: msg.html,
+    text: msg.text,
+  });
 
-  try {
-    res = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `token ${cfg.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from_name: cfg.fromName,
-        from_email: cfg.fromEmail,
-        recipients: [{ type: "to", email: cfg.toEmail, name: cfg.fromName }],
-        subject: msg.subject,
-        html: msg.html,
-        text: msg.text,
-      }),
-      // A lead should never hang the request. Relay is normally sub-second.
-      signal: AbortSignal.timeout(10_000),
-    });
-  } catch (err) {
-    const timedOut = err instanceof Error && err.name === "TimeoutError";
-    return {
-      ok: false,
-      reason: timedOut ? "timeout" : "network",
-      detail: err instanceof Error ? err.message : String(err),
-    };
-  }
+  let lastAuthError = "";
 
-  if (!res.ok) {
-    // Relay puts the actual cause in the body (unauthenticated domain, bad
-    // key, quota). Without it every failure looks the same in the logs.
+  for (const scheme of AUTH_SCHEMES) {
+    let res: Response;
+
+    try {
+      res = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `${scheme} ${cfg.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: payload,
+        // A lead should never hang the request. Relay is normally sub-second.
+        signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
+      });
+    } catch (err) {
+      // A network failure says nothing about the auth scheme, so stop here
+      // instead of burning the retry on it.
+      const timedOut = err instanceof Error && err.name === "TimeoutError";
+      return {
+        ok: false,
+        reason: timedOut ? "timeout" : "network",
+        detail: err instanceof Error ? err.message : String(err),
+      };
+    }
+
+    if (res.ok) return { ok: true, scheme };
+
+    // Relay puts the actual cause in the body (unverified domain, bad key,
+    // quota). Without it every failure looks the same in the logs.
     const detail = await res.text().catch(() => "");
+
+    if (res.status === 401 || res.status === 403) {
+      lastAuthError = `${res.status} ${detail.slice(0, 300)}`;
+      continue; // the other scheme may be the accepted one
+    }
+
     return {
       ok: false,
       reason: "http",
@@ -102,5 +129,13 @@ export async function sendViaRelay(
     };
   }
 
-  return { ok: true };
+  return {
+    ok: false,
+    reason: "auth",
+    detail:
+      `Relay rechazó la credencial con los dos esquemas ` +
+      `(${AUTH_SCHEMES.join(", ")}). Último error: ${lastAuthError}. ` +
+      `Revisá RELAY_API_KEY y RELAY_ACCOUNT_ID, y que el dominio de ` +
+      `RELAY_FROM_EMAIL esté verificado en Relay.`,
+  };
 }

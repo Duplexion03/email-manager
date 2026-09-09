@@ -134,5 +134,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "send_failed" }, { status: 502 });
   }
 
+  // Which Authorization scheme Relay accepted. The official docs disagree, so
+  // this is how we find out which one is real; once it shows up consistently
+  // in the logs, pin it in lib/relay.ts and drop the retry.
+  console.log("[lead] enviado por Relay con el esquema:", result.scheme);
+
   return NextResponse.json({ ok: true });
 }
