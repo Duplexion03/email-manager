@@ -11,10 +11,16 @@
  *   /docs/quickexamples  ->  Authorization: token {apiKey}
  *   /docs/gettingstarted ->  Authorization: Bearer {apiKey}
  *
- * Both are Doppler's own documentation, so rather than bet on one and have
- * every lead fail with an unexplained 401, we send with the first scheme and
- * retry once with the other if Relay rejects the credentials. The scheme that
- * works is logged, so it can be pinned here once we see it in production.
+ * Checked against the live API on 2026-09-18 with a real key: BOTH are
+ * accepted (200 on / and on /accounts/{name}/domains). The retry below is
+ * kept anyway — it costs nothing when the first scheme works, and it means a
+ * future change on Doppler's side cannot silently kill every lead.
+ *
+ * Note on accountId: Relay exposes two names for the same account, and they
+ * are NOT interchangeable. The domain endpoints answer to the alias
+ * (/accounts/shift/domains) while the send endpoint answers to the number
+ * (/accounts/9743/messages). RELAY_ACCOUNT_ID must be the one the *messages*
+ * endpoint takes, or every send comes back 403.
  *
  * Only the fields confirmed in the official example are sent. `reply_to` is
  * NOT included: it is absent from the public schema and an unknown field
